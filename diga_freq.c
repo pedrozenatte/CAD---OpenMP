@@ -9,8 +9,16 @@ Pedro Guilherme de Barros Zenatte 13676919
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <omp.h>
 
-char* ler_linha_dinamica() {
+typedef struct tipo_dado{
+    int c; // Código ASCII do caracter
+    int freq; // Frequência deste caracter na string
+} elemento;
+
+#define T 4
+
+char* ler_linha_dinamica(int *tamanho_linhas) {
     size_t tamanho = 0;
     size_t capacidade = 16;
     char* linha = malloc(capacidade);
@@ -39,16 +47,30 @@ char* ler_linha_dinamica() {
 int main() {
     char** matriz_linhas = NULL;
     size_t quantidade = 0;
+    int contador_linhas = 0;
+    int *tamanho_linhas = malloc(sizeof(int));
+    int caracter;
 
     char* linha;
-    while ((linha = ler_linha_dinamica()) != NULL) {
+    while ((linha = ler_linha_dinamica(tamanho_linhas)) != NULL) {
         matriz_linhas = realloc(matriz_linhas, (quantidade + 1) * sizeof(char*));
         matriz_linhas[quantidade++] = linha;
+        contador_linhas++;
     }
 
-    
+    #pragma omp parallel num_threads(T)
+    {
+        int meu_id = omp_get_thread_num();
+        #pragma omp for
+            for(int i = 0; i < contador_linhas; i++){
+                for(int j = 0; j < strlen(matriz_linhas[i]) - 1; j++){
+                    caracter = matriz_linhas[i][j];
+                    printf("%d ", caracter);
+                }
+                printf("    %d\n", meu_id); 
+            }
+    }
 
-    printf("%c %c", matriz_linhas[0][0], matriz_linhas[1][2]);
 
     free(matriz_linhas);
 
