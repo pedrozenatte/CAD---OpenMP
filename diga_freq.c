@@ -49,7 +49,7 @@ int main() {
     size_t quantidade = 0;
     int contador_linhas = 0;
     int *tamanho_linhas = malloc(sizeof(int));
-    int caracter;
+    int codigo;
 
     char* linha;
     while ((linha = ler_linha_dinamica(tamanho_linhas)) != NULL) {
@@ -60,17 +60,13 @@ int main() {
 
     #pragma omp parallel num_threads(T)
     {
-        int meu_id = omp_get_thread_num();
         #pragma omp for
             for(int i = 0; i < contador_linhas; i++){
                 for(int j = 0; j < strlen(matriz_linhas[i]) - 1; j++){
-                    caracter = matriz_linhas[i][j];
-                    printf("%d ", caracter);
+                    
                 }
-                printf("    %d\n", meu_id); 
             }
     }
-
 
     free(matriz_linhas);
 
