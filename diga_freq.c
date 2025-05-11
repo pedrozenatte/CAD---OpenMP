@@ -1,8 +1,8 @@
 /*
-Giovanni dos Santos 13695341
-Guilherme Augusto Fincatti da Silva 13676986
-Marcelo Eduardo Reginato 13676965
-Pedro Guilherme de Barros Zenatte 13676919
+Giovanni dos Santos - 13695341
+Guilherme Augusto Fincatti da Silva - 13676986
+Marcelo Eduardo Reginato - 13676965
+Pedro Guilherme de Barros Zenatte - 13676919
 */
 
 #include <stdio.h>
@@ -102,7 +102,7 @@ char* ler_linha_dinamica(int *tamanho_linhas){
     return linha;
 }
 
-int main() {
+int main(){
     char** matriz_linhas = NULL;
     size_t quantidade = 0;
     int contador_linhas = 0;
@@ -189,7 +189,7 @@ int main() {
             for(int i = 0; i < contador_linhas; i++){
                 #pragma omp task firstprivate(i)
                 {
-                    merge_sort_paralelo(vetores_ordenados[i], 0, MAX_ASCII - 1, 4); // 4 = profundidade de paralelismo
+                    merge_sort_paralelo(vetores_ordenados[i], 0, MAX_ASCII - 1, 4);
                 }
             }
         }
@@ -206,11 +206,14 @@ int main() {
                 printf("%d %d\n", vetores_ordenados[i][j].c, vetores_ordenados[i][j].freq);
             }
         }
+        if(i == contador_linhas - 1) // Somente para não pular linha na saída da última string
+            break;
         printf("\n");
     }
 
+    // printf("Tempo total: %lf\n", wtime);
+
     /* Desalocação das matrizes utilizadas */
-    printf("Tempo total: %lf\n", wtime);
 
     for(int i = 0; i < contador_linhas; i++){
         free(matriz_linhas[i]);
