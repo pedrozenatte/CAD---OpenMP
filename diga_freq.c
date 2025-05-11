@@ -10,8 +10,8 @@ Pedro Guilherme de Barros Zenatte - 13676919
 #include <string.h>
 #include <omp.h>
 
-#define T 4
-#define MAX_ASCII 126
+#define T 4 // Número de threads
+#define MAX_ASCII 126 // Código máximo dos caracteres ASCII
 
 typedef struct tipo_dado{
     int c; // Código ASCII do caracter
@@ -19,6 +19,7 @@ typedef struct tipo_dado{
 } elemento;
 
 void merge(elemento *vetor, int inicio, int meio, int fim){
+    /* Criando e preenchendo vetores de elementos da esquerda e direita */
     int tamanho_esq = meio - inicio + 1;
     int tamanho_dir = fim - meio;
 
@@ -31,6 +32,7 @@ void merge(elemento *vetor, int inicio, int meio, int fim){
     for(int i = 0; i < tamanho_dir; i++)
         dir[i] = vetor[meio + 1 + i];
 
+    /* Comparando e intercalando os elementos dos vetores esquerdo e direito de forma ordenada */
     int i = 0, j = 0, k = inicio;
     while(i < tamanho_esq && j < tamanho_dir){
         if (esq[i].freq <= dir[j].freq){
@@ -41,42 +43,53 @@ void merge(elemento *vetor, int inicio, int meio, int fim){
         }
     }
 
+    /* Copiando os elementos restantes do vetor da esquerda */
     while(i < tamanho_esq){
         vetor[k++] = esq[i++];
     }
 
+    /* Copiando os elementos restantes do vetor da direita */
     while(j < tamanho_dir){
         vetor[k++] = dir[j++];
     }
 
+    /* Desalocando vetores */
     free(esq);
     free(dir);
 }
 
 void merge_sort_paralelo(elemento *vetor, int inicio, int fim, int profundidade_maxima){
+    /* Caso base: vetor com um único elemento ou índices inválidos */
     if(inicio >= fim)
         return;
 
     int meio = inicio + (fim - inicio) / 2;
 
     if(profundidade_maxima > 0){
+        /* Criação de tarefa para ordenar a metade esquerda do vetor */
         #pragma omp task
         merge_sort_paralelo(vetor, inicio, meio, profundidade_maxima - 1);
 
+        /* Criação de tarefa para ordenar a metade direita do vetor */
         #pragma omp task
         merge_sort_paralelo(vetor, meio + 1, fim, profundidade_maxima - 1);
 
+        /* Espera as duas tarefas serem finalizadas antes de unir os vetores */
         #pragma omp taskwait
     } 
     else{
+        /* Quando atinge a profundidade máxima executa sequencialmente */
+        /* Limita a profundidade de paralelismo para evitar overhead de tarefas pequenas */
         merge_sort_paralelo(vetor, inicio, meio, 0);
         merge_sort_paralelo(vetor, meio + 1, fim, 0);
     }
 
+    /* Intercala duas metades ordenadas */
     merge(vetor, inicio, meio, fim);
 }
 
 char* ler_linha_dinamica(int *tamanho_linhas){
+    /* Cria vetor com tamanho inicial */
     size_t tamanho = 0;
     size_t capacidade = 16;
     char* linha = malloc(capacidade);
@@ -87,7 +100,7 @@ char* ler_linha_dinamica(int *tamanho_linhas){
     while((c = getchar()) != EOF && c != '\n'){
         if (tamanho + 1 >= capacidade) {
             capacidade *= 2;
-            linha = realloc(linha, capacidade);
+            linha = realloc(linha, capacidade); // Realoca memória caso a linha seja maior do que o estimado
             if (!linha) return NULL;
         }
         linha[tamanho++] = c;
@@ -189,7 +202,7 @@ int main(){
             for(int i = 0; i < contador_linhas; i++){
                 #pragma omp task firstprivate(i)
                 {
-                    merge_sort_paralelo(vetores_ordenados[i], 0, MAX_ASCII - 1, 4);
+                    merge_sort_paralelo(vetores_ordenados[i], 0, MAX_ASCII - 1, 4); // 4 = nível máximo de profundidade
                 }
             }
         }
